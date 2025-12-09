@@ -1,13 +1,11 @@
-//Added Webhook
-//Editing this file to test Windows
 pipeline {
     agent any
 
     stages {
         stage('clone project') {
             steps {
-                // Automatically checks out the branch that triggered the build
-                checkout scm
+                git branch: 'master',
+                    url: 'https://github.com/sharathg97/Amazon.git'
             }
         }
 
