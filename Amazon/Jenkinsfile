@@ -1,21 +1,11 @@
 pipeline {
     agent any
-    
-     parameters {
-        string(name: 'APP_VERSION', defaultValue: '1.0.0', description: 'App version')
-    }
-    
-    environment {
-        
-        WAR_BACKUP_DIR = "backup"
-    }
 
-
-    
     stages {
         stage('clone project') {
             steps {
-              checkout scm
+                // Automatically checks out the branch that triggered the build
+                checkout scm
             }
         }
 
@@ -43,95 +33,13 @@ dir('Amazon') {
 }
        }
    }
-   
-   stage('Select Environment Based on Branch') {
-            steps {
-                script {
-                    def TARGET_ENV = ""
-                    def TOMCAT_HOST = ""
-
-                    if (env.BRANCH_NAME == 'Dev') {
-                        TARGET_ENV  = "Dev"
-                        TOMCAT_HOST = "dev-tomcat.local"
-                    } else if (env.BRANCH_NAME == 'QA') {
-                        TARGET_ENV  = "QA"
-                        TOMCAT_HOST = "qa-tomcat.local"
-                    } else if (env.BRANCH_NAME == 'Prod') {
-                        TARGET_ENV  = "Prod"
-                        TOMCAT_HOST = "prod-tomcat.local"
-                    } else {
-                        error "Unsupported branch: ${env.BRANCH_NAME}"
-                    }
-
-                    env.TARGET_ENV  = TARGET_ENV
-                    env.TOMCAT_HOST = TOMCAT_HOST
-
-                    echo "Selected ENV: ${env.TARGET_ENV} (${env.TOMCAT_HOST})"
-                }
-            }
-        }
-   
    stage('build') {
       steps {
 dir('Amazon') {
-           echo "Starting build with ${params.ENV}"
-           sh 'mvn clean install -Dmaven.test.skip=true'
+
+           sh 'mvn clean install'
 }
        }
    }
-   
-   stage('Backup WAR') {
-            steps {
-                sh "mkdir -p ${WAR_BACKUP_DIR}"
-                sh "cp Amazon/Amazon-Web/target/*.war ${WAR_BACKUP_DIR}/amazon_${BUILD_NUMBER}.war"
-            }
-        }
-   
-   
-
-  
-
-   
-   stage('Deploy to Tomcat') {
-    steps {
-        stage('Deploy to Tomcat') {
-    steps {
-        script {
-
-            def TOMCAT_URL = ""
-
-            if (env.BRANCH_NAME == 'Dev') {
-                TOMCAT_URL = "http://192.168.235.129:8081/"
-                echo "Deploying to DEV Tomcat"
-
-            } else if (env.BRANCH_NAME == 'QA') {
-                TOMCAT_URL = "192.168.235.129:8083/"
-                echo "Deploying to QA Tomcat"
-
-            } else if (env.BRANCH_NAME == 'Prod') {
-                TOMCAT_URL = "192.168.235.129:8084/"
-                echo "Deploying to PROD Tomcat"
-
-            } else {
-                error "No deployment configured for branch: ${env.BRANCH_NAME}"
-            }
-
-            deploy adapters: [
-                tomcat9(
-                    alternativeDeploymentContext: '',
-                    credentialsId: '86a9f083-6d7e-4d3a-b445-de7b8f7232c8',
-                    path: '',
-                    url: TOMCAT_URL
-                )
-            ],
-            contextPath: 'Amazon',
-            war: '**/Amazon.war'
-        }
-    }
-}
-
-    }
-}
-
   }
   }
