@@ -1,14 +1,10 @@
 pipeline {
     agent any
-    
-parameters {
-     choice(name: 'ENV', choices: ['Developmnet', 'QA', 'Production'], description: 'Choose environment')
-     }
-    
 
     stages {
         stage('clone project') {
             steps {
+                // Automatically checks out the branch that triggered the build
                 checkout scm
             }
         }
@@ -37,62 +33,13 @@ dir('Amazon') {
 }
        }
    }
-   
    stage('build') {
       steps {
 dir('Amazon') {
-           echo "Starting build with ${params.ENV}"
-           sh 'mvn clean install -Dmaven.test.skip=true'
+
+           sh 'mvn clean install'
 }
        }
    }
-   
-  
-
-   stage('Backup Existing WAR') {
-    steps {
-        sh '''
-            TOMCAT_WEBAPPS="/home/shar/linux/maven/tomcat_4/apache-tomcat-9.0.112/webapps"
-            WAR_NAME="Amazon.war"
-            BACKUP_DIR="/home/shar/linux/maven/tomcat_4/apache-tomcat-9.0.112/war_backup"
-
-            echo "Checking directory: $TOMCAT_WEBAPPS"
-            ls -l "$TOMCAT_WEBAPPS"
-
-            echo "Checking full path: $TOMCAT_WEBAPPS/$WAR_NAME"
-            if [ -e "$TOMCAT_WEBAPPS/$WAR_NAME" ]; then
-                echo "File exists!"
-            else
-                echo "File does NOT exist!"
-            fi
-
-            mkdir -p "$BACKUP_DIR"
-
-            if [ -f "$TOMCAT_WEBAPPS/$WAR_NAME" ]; then
-                echo "Backing up existing WAR..."
-                cp "$TOMCAT_WEBAPPS/$WAR_NAME" "$BACKUP_DIR/Amazon-$(date +%Y%m%d-%H%M%S).war"
-            else
-                echo "No existing WAR found. Skipping backup."
-            fi
-        '''
-    }
-}
-
-   
-   stage('Deploy to Tomcat') {
-    steps {
-        deploy adapters: [
-            tomcat9(
-                alternativeDeploymentContext: '',
-                credentialsId: '86a9f083-6d7e-4d3a-b445-de7b8f7232c8',
-                path: '',
-                url: 'http://localhost:8084/'
-            )
-        ],
-        contextPath: 'Amazon',
-        war: '**/Amazon.war'
-    }
-}
-
   }
   }
