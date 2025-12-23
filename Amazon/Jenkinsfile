@@ -5,7 +5,9 @@ pipeline {
         stage('clone project') {
             steps {
                 // Automatically checks out the branch that triggered the build
-                checkout scm
+                //checkout scm
+                git branch : 'master',
+url : 'https://github.com/sharathg97/Amazon.git'
             }
         }
 
