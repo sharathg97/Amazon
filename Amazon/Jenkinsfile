@@ -1,5 +1,7 @@
 pipeline {
-    agent { label 'shar-windows-slave' }
+    agent {
+        label 'shat-windows-slave'
+    }
     stages {
         stage('clone') {
             steps {
@@ -10,28 +12,28 @@ pipeline {
         stage('clean') {
             steps {
                 dir('Amazon') {
-                    sh 'mvn clean'
+                    bat 'mvn clean'
                 }
             }
         }
         stage('compile') {
             steps {
                 dir('Amazon') {
-                    sh 'mvn compile'
+                    bat 'mvn compile'
                 }
             }
         }
         stage('test') {
             steps {
                 dir('Amazon') {
-                    sh 'mvn test'
+                    bat 'mvn test'
                 }
             }
         }
         stage('build') {
             steps {
                 dir('Amazon') {
-                    sh 'mvn clean install'
+                    bat 'mvn clean install'
                 }
             }
         }
