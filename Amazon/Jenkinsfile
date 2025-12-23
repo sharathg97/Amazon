@@ -1,16 +1,12 @@
 pipeline {
     agent any
-
     stages {
-        stage('clone project') {
+        stage('clone') {
             steps {
-                // Automatically checks out the branch that triggered the build
-                //checkout scm
-                git branch : 'master',
-url : 'https://github.com/sharathg97/Amazon.git'
+                git branch: 'master',
+                url: 'https://github.com/sharathg97/Amazon.git'
             }
         }
-
         stage('clean') {
             steps {
                 dir('Amazon') {
@@ -18,30 +14,26 @@ url : 'https://github.com/sharathg97/Amazon.git'
                 }
             }
         }
-    stage('compile') {
+        stage('compile') {
             steps {
                 dir('Amazon') {
                     sh 'mvn compile'
                 }
             }
-
+        }
+        stage('test') {
+            steps {
+                dir('Amazon') {
+                    sh 'mvn test'
+                }
+            }
+        }
+        stage('build') {
+            steps {
+                dir('Amazon') {
+                    sh 'mvn clean install'
+                }
+            }
+        }
     }
-
-   stage('test') {
-      steps {
-dir('Amazon') {
-
-           sh 'mvn test'
 }
-       }
-   }
-   stage('build') {
-      steps {
-dir('Amazon') {
-
-           sh 'mvn clean install'
-}
-       }
-   }
-  }
-  }
